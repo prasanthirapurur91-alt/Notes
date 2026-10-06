@@ -1,0 +1,66 @@
+import { Testimonial } from '@/types';
+
+export const testimonials: Testimonial[] = [
+  {
+    id: 'test-1',
+    name: 'Ananya Verma',
+    role: 'Software Engineer',
+    companyOrCollege: 'Interview Candidate',
+    content: 'These notes helped me crack multiple interviews. Very structured and easy to revise.',
+    rating: 5,
+    purchasedItem: 'Handwritten PDF Notes Bundle',
+    isDemo: false,
+  },
+  {
+    id: 'test-2',
+    name: 'Vikramaditya Roy',
+    role: 'Tech Developer',
+    companyOrCollege: 'QA & Software Development',
+    content: 'Best handwritten notes I have ever seen. Super helpful before interviews.',
+    rating: 5,
+    purchasedItem: 'Complete Technical Collection',
+    isDemo: false,
+  },
+  {
+    id: 'test-3',
+    name: 'Siddharth Patel',
+    role: 'Backend Developer',
+    companyOrCollege: 'Software Engineer',
+    content: 'Concise, practical and to the point. Saves a lot of time.',
+    rating: 5,
+    purchasedItem: 'All Notes Access Pass',
+    isDemo: false,
+  },
+  {
+    id: 'test-4',
+    name: 'Kavya Nair',
+    role: 'System Engineer',
+    companyOrCollege: 'Developer Candidate',
+    content: 'Loved the way concepts are explained. Highly recommended!',
+    rating: 5,
+    purchasedItem: 'SDET & Technical Notes',
+    isDemo: false,
+  },
+  {
+    id: 'test-5',
+    name: 'Pooja Deshmukh',
+    role: 'QA Specialist',
+    companyOrCollege: 'Test Engineer',
+    content: 'Very easy to understand and perfect for quick revision.',
+    rating: 5,
+    purchasedItem: 'Handwritten PDF Collection',
+    isDemo: false,
+  },
+  {
+    id: 'test-6',
+    name: 'Arjun Mehta',
+    role: 'Full Stack Engineer',
+    companyOrCollege: 'Tech Aspirant',
+    content: 'A great collection for developers preparing for interviews.',
+    rating: 5,
+    purchasedItem: 'Complete Notes Bundle',
+    isDemo: false,
+  },
+];
+
+
