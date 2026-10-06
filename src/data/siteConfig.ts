@@ -4,7 +4,7 @@ export const siteConfig: SiteConfig = {
   brandName: 'Prep Library',
   tagline: 'Learn. Revise. Grow.',
   description: 'Explore 200+ handwritten technical PDF notes and 1500+ interview questions, plus QA/SDET preparation and automation resources.',
-  supportEmail: 'prasanthirapuru.r91@gmail.com',
+  supportEmail: 'prasanthirapuru7@gmail.com',
   allAccessPrice: 199,
   allAccessOriginalPrice: 699,
   socialLinks: {
