@@ -63,11 +63,11 @@ export const HeroSection: React.FC = () => {
             {/* Quick Stats Bar */}
             <div className="grid grid-cols-3 gap-4 pt-6 max-w-md mx-auto lg:mx-0 border-t border-neutral-200">
               <div>
-                <strong className="block text-2xl font-black text-black">160+</strong>
+                <strong className="block text-2xl font-black text-black">200+</strong>
                 <span className="text-xs text-neutral-500 font-semibold">Notes</span>
               </div>
               <div>
-                <strong className="block text-2xl font-black text-black">1200+</strong>
+                <strong className="block text-2xl font-black text-black">1500+</strong>
                 <span className="text-xs text-neutral-500 font-semibold">Interview Questions</span>
               </div>
               <div>

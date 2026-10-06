@@ -115,11 +115,11 @@ export const NotesCatalogue: React.FC = () => {
           </span>
 
           <h1 className="text-3xl sm:text-5xl font-black text-black tracking-tight leading-tight">
-            109 Handwritten Notes
+            200+ Handwritten Notes
           </h1>
 
           <p className="text-sm sm:text-base text-neutral-600 leading-relaxed font-medium max-w-2xl mx-auto">
-            Explore 109 handwritten technical PDF notes across 26 categories for Java, Python, System Design, Testing, and more.
+            Explore 200+ handwritten technical PDF notes across 26 categories for Java, Python, System Design, Testing, and more.
           </p>
         </div>
 
@@ -135,14 +135,14 @@ export const NotesCatalogue: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
               <div className="flex items-center justify-center gap-1.5 text-lg font-black text-black mb-1">
-                <BookOpen className="w-5 h-5 text-black" /> 109 Notes
+                <BookOpen className="w-5 h-5 text-black" /> 200+ Notes
               </div>
               <span className="text-[11px] text-neutral-600 font-medium">Handwritten Study Sheets</span>
             </div>
 
             <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
               <div className="flex items-center justify-center gap-1.5 text-lg font-black text-black mb-1">
-                <HelpCircle className="w-5 h-5 text-black" /> 1,200+ Questions
+                <HelpCircle className="w-5 h-5 text-black" /> 1,500+ Questions
               </div>
               <span className="text-[11px] text-neutral-600 font-medium">Technical Interview Q&As</span>
             </div>
@@ -176,7 +176,7 @@ export const NotesCatalogue: React.FC = () => {
                 Complete Notes Access Special Offer
               </strong>
               <span className="text-xs text-neutral-600">
-                Unlock Complete Access to All 26 Categories & 109 Notes for ₹199 (M.R.P. ₹499)
+                Unlock Complete Access to All 26 Categories & 200+ Notes for ₹199 (M.R.P. ₹699)
               </span>
             </div>
           </div>
