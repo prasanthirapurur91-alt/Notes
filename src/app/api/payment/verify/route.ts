@@ -144,6 +144,25 @@ export async function POST(request: Request) {
 
     if (dbError) {
       console.warn('[Supabase Order Insert Warning]:', dbError.message);
+      if (dbError.message.includes('google_drive_link')) {
+        const { error: fallbackDbError } = await supabaseAdmin.from('orders').insert({
+          id: orderId,
+          customer_name: fullName || 'Customer',
+          email: cleanEmail,
+          product_id: matchedProduct.id,
+          product_type: matchedProduct.productType,
+          product_name: matchedProduct.name,
+          amount: matchedProduct.price,
+          currency: 'INR',
+          payment_provider: 'razorpay',
+          transaction_id: cleanTxnId,
+          payment_status: 'paid',
+          delivery_status: 'sent',
+        });
+        if (!fallbackDbError) {
+          console.log(`[Supabase Order Success] Recorded order ${orderId} (fallback schema) for ${cleanEmail}`);
+        }
+      }
     } else {
       console.log(
         `[Supabase Order Success] Recorded order ${orderId} for ${cleanEmail} (Amount: ₹${matchedProduct.price}, Product: ${matchedProduct.name})`
