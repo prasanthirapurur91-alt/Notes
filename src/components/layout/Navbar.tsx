@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MobileMenu } from '@/components/layout/MobileMenu';
 import { BookOpen, Sparkles, Menu, ShieldCheck, Lock } from 'lucide-react';
+import { siteConfig } from '@/data/siteConfig';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -60,7 +61,7 @@ export const Navbar: React.FC = () => {
               className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-3 py-1.5 rounded-lg transition-all shadow-md shadow-emerald-700/30 cursor-pointer border border-emerald-400 green-blinking-border shrink-0"
             >
               <Sparkles className="w-3.5 h-3.5 text-white shrink-0 animate-pulse" />
-              <span>Pay ₹199</span>
+              <span>Pay ₹{siteConfig.allAccessPrice}</span>
             </Link>
           </div>
 
@@ -70,7 +71,7 @@ export const Navbar: React.FC = () => {
               href="/payment?type=all_notes"
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black px-2.5 py-1 rounded-md border border-emerald-400 green-blinking-border shrink-0"
             >
-              Pay ₹199
+              Pay ₹{siteConfig.allAccessPrice}
             </Link>
             <button
               onClick={() => setMobileMenuOpen(true)}

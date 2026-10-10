@@ -1,10 +1,12 @@
 import nodemailer from 'nodemailer';
+import { siteConfig } from '@/data/siteConfig';
 
 interface SendDriveEmailParams {
   toEmail: string;
   customerName: string;
   productName: string;
   driveLink: string;
+  price?: number;
 }
 
 export async function sendAccessEmail({
@@ -12,6 +14,7 @@ export async function sendAccessEmail({
   customerName,
   productName,
   driveLink,
+  price,
 }: SendDriveEmailParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
@@ -38,6 +41,7 @@ export async function sendAccessEmail({
     });
 
     const formattedName = customerName && customerName.trim() ? customerName.trim() : 'Learner';
+    const paidPrice = price && price > 0 ? price : siteConfig.allAccessPrice;
     const currentDate = new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
@@ -51,14 +55,14 @@ export async function sendAccessEmail({
     const textContent = `
 Hello ${formattedName},
 
-Thank you for your purchase of ${productName} (₹199).
+Thank you for your purchase of ${productName} (₹${paidPrice}).
 
 You can access and download your complete handwritten PDF notes collection on Google Drive here:
 ${driveLink}
 
 Order Details:
 - Item: ${productName}
-- Amount: ₹199 (Paid)
+- Amount: ₹${paidPrice} (Paid)
 - Access: Lifetime Unlimited Access
 
 If you have any questions or need assistance, reply to this email or contact us at learnalways93@gmail.com.
@@ -147,7 +151,7 @@ https://preplibrary.com
                       </tr>
                       <tr>
                         <td style="padding: 4px 0; font-weight: 600;">Amount Paid:</td>
-                        <td style="padding: 4px 0; text-align: right; font-weight: 800; color: #059669;">₹199</td>
+                        <td style="padding: 4px 0; text-align: right; font-weight: 800; color: #059669;">₹${paidPrice}</td>
                       </tr>
                       <tr>
                         <td style="padding: 4px 0; font-weight: 600;">Access Level:</td>

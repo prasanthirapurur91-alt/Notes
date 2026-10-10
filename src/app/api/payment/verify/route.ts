@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase';
 import { defaultProductsCatalogue } from '@/data/productsCatalogue';
+import { siteConfig } from '@/data/siteConfig';
 import { sendAccessEmail } from '@/lib/email';
 
 // In-memory set to prevent duplicate email dispatches during runtime burst requests
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
           id: dbProd.id,
           name: dbProd.name,
           productType: dbProd.product_type,
-          price: Number(dbProd.price) || 199,
+          price: Number(dbProd.price) || siteConfig.allAccessPrice || 199,
           driveLink: dbProd.drive_link || '',
         };
       }
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
         id: fallbackProd.id,
         name: fallbackProd.name,
         productType: fallbackProd.productType,
-        price: fallbackProd.price || 199,
+        price: fallbackProd.price || siteConfig.allAccessPrice || 199,
         driveLink: fallbackProd.driveLink,
       };
     }
@@ -155,6 +156,7 @@ export async function POST(request: Request) {
       customerName: fullName || 'Learner',
       productName: matchedProduct.name,
       driveLink: targetDriveLink,
+      price: matchedProduct.price,
     });
 
     return NextResponse.json({

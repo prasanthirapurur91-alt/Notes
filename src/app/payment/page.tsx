@@ -32,8 +32,8 @@ function PaymentContent() {
   const { addOrder } = useAdminData();
 
   const itemTitle = 'Complete All-Access PDF Notes Pass';
-  const itemPrice = 199;
-  const itemOriginalPrice = 699;
+  const itemPrice = siteConfig.allAccessPrice || 199;
+  const itemOriginalPrice = siteConfig.allAccessOriginalPrice || 699;
 
   const defaultDriveLink = 'https://drive.google.com/drive/folders/1ohYqODYiQmYbZSJ1j9fNx-_1sqA5xDlJ?usp=drive_link';
 

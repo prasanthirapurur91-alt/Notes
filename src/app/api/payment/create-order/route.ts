@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
+import { siteConfig } from '@/data/siteConfig';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { amount = 199, email, fullName, productId, productType } = body;
+    const { amount, email, fullName, productId, productType } = body;
+    const effectiveAmount = Number(amount) > 0 ? Number(amount) : (siteConfig.allAccessPrice || 199);
 
     const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || '').trim();
     const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
@@ -18,7 +20,7 @@ export async function POST(request: Request) {
         isDemoMode: true,
         orderId: fallbackOrderId,
         order_id: fallbackOrderId,
-        amount: Math.round(amount * 100),
+        amount: Math.round(effectiveAmount * 100),
         currency: 'INR',
         keyId: null,
       });
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
       });
 
       const options = {
-        amount: Math.round(amount * 100),
+        amount: Math.round(effectiveAmount * 100),
         currency: 'INR',
         receipt: `rcpt_${Date.now().toString().slice(-10)}`,
         notes: {

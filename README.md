@@ -1,102 +1,236 @@
-# Prep Library — Technical PDF Notes & Interview Marketplace
+# Prep Library — Technical PDF Notes Marketplace
 
-**Prep Library** is a modern, responsive web application designed for engineering students, software developers, and QA professionals to access 200+ handwritten PDF technical notes and 1,500+ interview Q&As across 26 technical categories.
+**Prep Library** is a production-ready Next.js application designed for engineering students, software developers, and QA professionals to purchase and access 200+ handwritten technical PDF study notes and 1,500+ interview Q&As across 26 technical categories.
 
 ---
 
-## 🌟 Key Features
+## 📑 Table of Contents
+1. [Core Features & Architecture](#-core-features--architecture)
+2. [Tech Stack](#-tech-stack)
+3. [How to Switch to Razorpay Live Mode](#-how-to-switch-to-razorpay-live-mode)
+4. [How to Change the Price in the Future (e.g. ₹199 to ₹500)](#-how-to-change-the-price-in-the-future)
+5. [How to Change or Update Google Drive Notes Link](#-how-to-change-or-update-google-drive-notes-link)
+6. [Complete Post-Payment Automated Flow](#-complete-post-payment-automated-flow)
+7. [Environment Variables Reference](#-environment-variables-reference)
+8. [Supabase Database Schema](#-supabase-database-schema)
+9. [Local Development & Deployment](#-local-development--deployment)
 
-* **White & Black Aesthetic**: Clean, high-contrast white background with solid black action buttons (`bg-black text-white hover:bg-neutral-800`).
-* **26 Technical Categories**: Java & Spring, Python, JavaScript/TypeScript, DSA, Web Dev, Databases, System Design, Operating Systems, Computer Networks, Cybersecurity, QA/Testing, DevOps, GenAI, and more.
-* **109 Handcrafted PDF Items**: Complete categorized PDF notes ready for learning and quick revision.
-* **Locked Resource Preview**: Displays key topics, pages count, and sample content points with a 3-page limit.
-* **Razorpay Payment Integration**: Streamlined checkout for the ₹199 Complete All-Access Pass (Original M.R.P. ₹699).
-* **Automated Delivery & Supabase Sync**: Real-time order recording into Supabase database and direct Google Drive folder access link delivery upon payment confirmation.
-* **Fully Responsive**: Optimized for mobile, tablet, and desktop screens.
+---
+
+## 🌟 Core Features & Architecture
+
+* **Streamlined Instant Checkout**: Focused single All-Access checkout with Razorpay Standard Web Gateway.
+* **Automated Order Logging**: Securely verifies payments via HMAC-SHA256 and records them into Supabase `orders` table.
+* **Automated Email Dispatch**: Dispatches transactional confirmation emails containing the Google Drive access link directly to the buyer's inbox.
+* **Centralized Price & Links**: Single-source-of-truth configuration for pricing and Drive delivery URLs.
+* **Mobile-First Responsive Design**: Includes desktop navigation, mobile hamburger drawer, and sticky bottom purchase bar.
 
 ---
 
 ## 🚀 Tech Stack
 
-* **Framework**: Next.js 16 (App Router)
-* **Language**: TypeScript
+* **Frontend**: Next.js 16 (App Router), React 19, TypeScript
 * **Styling**: Tailwind CSS
+* **Payment Gateway**: Razorpay Web Checkout SDK
 * **Database**: Supabase (PostgreSQL)
-* **Payment Gateway**: Razorpay Integration
-* **Icons**: Lucide React
+* **Email Service**: Nodemailer (Gmail SMTP)
+* **Hosting**: Vercel
 
 ---
 
-## 📂 Folder Structure
+## 💳 How to Switch to Razorpay Live Mode
 
-```
-note-craft-marketplace/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── payment/verify/route.ts  # Server-side payment verification & Supabase sync
-│   │   │   └── pdf/download/route.ts    # Secure PDF stream handler
-│   │   ├── notes/                      # Notes catalogue & detail views
-│   │   ├── payment/                    # Checkout page (₹199 offer)
-│   │   ├── globals.css                 # Global CSS rules & variables
-│   │   ├── layout.tsx                  # Base layout wrapper
-│   │   └── page.tsx                    # Store Home page
-│   ├── components/
-│   │   ├── cards/                      # Note cards & UI components
-│   │   ├── common/                     # Search bar, badges, section headers
-│   │   ├── home/                       # Hero section & store catalogue
-│   │   ├── layout/                     # Sticky Navbar & Footer (@handbook_library)
-│   │   ├── modals/                     # PDF preview modal
-│   │   └── notes/                      # Notes Catalogue list view
-│   ├── context/                        # Access & Admin Data Contexts
-│   ├── data/                           # 26 Categories, 109 Notes, siteConfig
-│   ├── lib/                            # Supabase client initialization
-│   └── types/                          # TypeScript definitions
-├── public/                             # Static assets
-├── supabase/
-│   └── schema.sql                      # SQL DDL script for Supabase orders table
-├── .env.local                          # Environment variables
-├── next.config.ts                      # Next.js configuration
-├── package.json                        # Project dependencies
-└── README.md                           # Documentation
+When you are ready to accept real customer payments in Indian Rupees (INR):
+
+### Step 1: Activate Live Mode in Razorpay Dashboard
+1. Log in to [Razorpay Dashboard](https://dashboard.razorpay.com).
+2. Look at the top-right toggle switch and switch from **Test Mode** to **Live Mode**.
+   *(Note: Ensure your Razorpay account activation/KYC is approved).*
+3. In the left navigation, go to **Account & Settings** → **API Keys** (or **Developer Controls**).
+4. Click **Generate Live Key** (or **Regenerate Live Key**).
+5. You will receive:
+   - **Live Key ID**: starts with `rzp_live_...`
+   - **Live Key Secret**: a 24-character secret string.
+
+### Step 2: Update Environment Variables in Vercel
+1. Go to your **[Vercel Dashboard](https://vercel.com/dashboard)** → Select the project (`Notes`).
+2. Navigate to **Settings** → **Environment Variables**.
+3. Edit or add the Razorpay keys:
+   - `NEXT_PUBLIC_RAZORPAY_KEY_ID` = `rzp_live_YOUR_LIVE_KEY_ID`
+   - `RAZORPAY_KEY_ID` = `rzp_live_YOUR_LIVE_KEY_ID`
+   - `RAZORPAY_KEY_SECRET` = `YOUR_LIVE_KEY_SECRET`
+4. Make sure to apply them to **Production**, **Preview**, and **Development**.
+5. Save changes.
+
+### Step 3: Redeploy on Vercel
+1. Go to the **Deployments** tab on Vercel.
+2. Click the three dots (`...`) on your latest deployment and select **Redeploy**.
+3. Once the build finishes, your live website will process real payments via Razorpay!
+
+### Step 4: Update `.env.local` for Local Testing (Optional)
+If running `npm run dev` locally with Live Keys, update `.env.local`:
+```env
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_live_YOUR_LIVE_KEY_ID
+RAZORPAY_KEY_ID=rzp_live_YOUR_LIVE_KEY_ID
+RAZORPAY_KEY_SECRET=YOUR_LIVE_KEY_SECRET
 ```
 
 ---
 
-## ⚙️ Environment Variables Setup (`.env.local`)
+## 💰 How to Change the Price in the Future
 
-Create a `.env.local` file in the root directory and add your credentials:
+The application uses **Centralized Price Architecture**. When you change the price, every button, badge, checkout order, Razorpay charge, database entry, and email receipt automatically updates.
+
+### Method 1: Change via Environment Variable (Recommended — No Code Edits Required)
+1. In your [`.env.local`](.env.local) file (and in **Vercel Project Settings → Environment Variables**), add or update:
+   ```env
+   NEXT_PUBLIC_ALL_ACCESS_PRICE=500
+   ```
+2. Redeploy on Vercel (or restart `npm run dev`).
+3. That's it!
+   - All buttons across the website will display **Pay ₹500**.
+   - Razorpay will create orders for ₹500 (50,000 paise).
+   - Customers **must pay ₹500** to receive payment verification and email delivery.
+
+### Method 2: Change Directly in Code
+If you prefer editing the code:
+1. Open [`src/data/siteConfig.ts`](src/data/siteConfig.ts).
+2. Change the default price:
+   ```typescript
+   // Change from 199 to 500:
+   const currentPrice = Number(process.env.NEXT_PUBLIC_ALL_ACCESS_PRICE) || 500;
+   ```
+3. Commit and push to GitHub:
+   ```bash
+   git add .
+   git commit -m "Update All-Access Pass price to 500"
+   git push origin main
+   ```
+
+---
+
+## 📁 How to Change or Update Google Drive Notes Link
+
+If you update your notes folder, organize new PDF files, or want to change the delivery link:
+
+### Where to Change:
+1. **In `.env.local` and Vercel**:
+   Update `GOOGLE_DRIVE_NOTES_LINK` with your new Google Drive folder URL:
+   ```env
+   GOOGLE_DRIVE_NOTES_LINK=https://drive.google.com/drive/folders/YOUR_NEW_FOLDER_ID?usp=drive_link
+   ```
+2. **In Vercel Dashboard**:
+   - Go to **Project Settings** → **Environment Variables**.
+   - Edit `GOOGLE_DRIVE_NOTES_LINK` and save.
+   - Click **Redeploy**.
+3. **In Code Default Fallback** (optional backup):
+   Open [`src/app/payment/page.tsx`](src/app/payment/page.tsx) and update `defaultDriveLink`:
+   ```typescript
+   const defaultDriveLink = 'https://drive.google.com/drive/folders/YOUR_NEW_FOLDER_ID?usp=drive_link';
+   ```
+
+> **What happens immediately:**  
+> Every new purchase from that moment onward will automatically log the new Drive link in Supabase and send the new link in the confirmation email!
+
+---
+
+## 🔄 Complete Post-Payment Automated Flow
+
+Here is the exact lifecycle of every customer purchase:
+
+```
+[1. Learner visits /payment]
+         │
+         ▼
+[2. Fills Name & Email → Clicks "Pay ₹199"]
+         │
+         ▼
+[3. Server calls POST /api/payment/create-order]
+   • Creates official Razorpay order with strict price enforcement
+         │
+         ▼
+[4. Razorpay Standard Checkout Modal Opens]
+   • Learner completes payment via UPI (GPay, PhonePe, Paytm), Card, or Netbanking
+         │
+         ▼
+[5. Client sends signature to POST /api/payment/verify]
+   • Verifies HMAC-SHA256 signature using RAZORPAY_KEY_SECRET
+   • If signature is invalid, access is immediately rejected
+         │
+         ▼
+[6. Database Synchronization in Supabase]
+   • Inserts verified record into public.orders table:
+     - customer_name, email, amount, payment_status ('paid')
+     - google_drive_link, transaction_id, created_at
+         │
+         ▼
+[7. Automated Email Access Dispatch]
+   • Nodemailer sends transactional receipt from "Prep Library"
+   • Email contains order receipt & "Open Google Drive Folder" access button
+         │
+         ▼
+[8. On-Screen Success Confirmation]
+   • User sees "Payment Successful! Please check your email for Google Drive link"
+```
+
+---
+
+## 🔐 Environment Variables Reference
+
+Here are all environment variables required for full production functionality:
 
 ```env
-# Supabase Configuration
+# ===================================================
+# SUPABASE CONFIGURATION
+# ===================================================
 NEXT_PUBLIC_SUPABASE_URL=https://ttmkugpqtjuarthoeaiw.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_srX0yYrtln5m1lIFyw-rwA_JbTWFeJT
 SUPABASE_SERVICE_ROLE_KEY=sb_publishable_srX0yYrtln5m1lIFyw-rwA_JbTWFeJT
 
-# Google Drive Access Folder Link
+# ===================================================
+# RAZORPAY GATEWAY (TEST OR LIVE)
+# ===================================================
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_live_YOUR_KEY_HERE
+RAZORPAY_KEY_ID=rzp_live_YOUR_KEY_HERE
+RAZORPAY_KEY_SECRET=YOUR_SECRET_HERE
+
+# ===================================================
+# GOOGLE DRIVE NOTES DELIVERY LINK
+# ===================================================
 GOOGLE_DRIVE_NOTES_LINK=https://drive.google.com/drive/folders/1ohYqODYiQmYbZSJ1j9fNx-_1sqA5xDlJ?usp=drive_link
 
-# Support Contact
-NEXT_PUBLIC_SUPPORT_EMAIL=learnalways93@gmail.com
+# ===================================================
+# OPTIONAL CENTRAL PRICE OVERRIDE
+# ===================================================
+NEXT_PUBLIC_ALL_ACCESS_PRICE=199
 
-# Razorpay Payment Gateway Credentials
-NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
-RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+# ===================================================
+# GMAIL SMTP EMAIL DISPATCH
+# ===================================================
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=learnalways93@gmail.com
+SMTP_PASS=gigz jhrh imzd tmsu
+EMAIL_FROM_ADDRESS="Prep Library" <learnalways93@gmail.com>
 ```
 
 ---
 
-## 🗄️ Database Setup (Supabase)
+## 🗄️ Supabase Database Schema
 
-Run the following DDL script in your **Supabase SQL Editor**:
+The marketplace requires only one primary table in Supabase. Run this SQL in your **Supabase Dashboard → SQL Editor**:
 
 ```sql
+-- 1. Clean up unused legacy tables
+DROP TABLE IF EXISTS public.notes, public.categories, public.products CASCADE;
+
+-- 2. Create the primary orders table
 CREATE TABLE IF NOT EXISTS public.orders (
     id TEXT PRIMARY KEY,
     customer_name TEXT NOT NULL,
     email TEXT NOT NULL,
-    product_id TEXT,
-    product_type TEXT,
+    product_id TEXT DEFAULT 'prod-all-notes',
+    product_type TEXT DEFAULT 'all_notes',
     product_name TEXT NOT NULL,
     amount NUMERIC(10, 2) NOT NULL,
     currency TEXT DEFAULT 'INR',
@@ -104,12 +238,14 @@ CREATE TABLE IF NOT EXISTS public.orders (
     transaction_id TEXT UNIQUE NOT NULL,
     payment_status TEXT DEFAULT 'paid',
     delivery_status TEXT DEFAULT 'sent',
-    google_drive_link TEXT DEFAULT 'https://drive.google.com/drive/folders/1ohYqODYiQmYbZSJ1j9fNx-_1sqA5xDlJ?usp=drive_link',
+    google_drive_link TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 3. Security: Enable Row Level Security (RLS)
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
+-- 4. Access Policy: Allow authenticated / server insertion
 CREATE POLICY "Allow server insertion" ON public.orders
     FOR ALL
     USING (true)
@@ -118,7 +254,7 @@ CREATE POLICY "Allow server insertion" ON public.orders
 
 ---
 
-## 🛠️ Local Development & Build Commands
+## 🛠️ Local Development & Deployment
 
 ```bash
 # 1. Install dependencies
@@ -127,43 +263,19 @@ npm install
 # 2. Run local development server
 npm run dev
 
-# 3. Build production bundle
+# 3. Build & verify production bundle
 npm run build
 
-# 4. Start production server locally
-npm run start
-```
-
----
-
-## 🌐 Deploying to Vercel & Pushing to GitHub
-
-### **1. Push Code to GitHub**
-Run the following commands in your terminal to push your repository to GitHub:
-
-```bash
+# 4. Push updates to GitHub (triggers automatic Vercel deployment)
 git add .
-git commit -m "Complete Prep Library Website"
-git remote add origin https://github.com/your-username/your-repo-name.git
-git branch -M main
-git push -u origin main
+git commit -m "Update project features"
+git push origin main
 ```
-
-### **2. Deploy to Vercel**
-1. Sign in to [Vercel](https://vercel.com) using GitHub.
-2. Select your repository `note-craft-marketplace`.
-3. Add your environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_DRIVE_NOTES_LINK`).
-4. Click **Deploy**. Vercel will generate your live production URL (e.g., `https://prep-library.vercel.app`).
-
-### **3. Connect Live URL to Razorpay**
-1. Log in to [Razorpay Dashboard](https://dashboard.razorpay.com).
-2. Navigate to **Account & Settings -> Website & App Details**.
-3. Paste your live Vercel URL (`https://prep-library.vercel.app`).
-4. Generate your **Live Key ID** & **Key Secret** and add them to your Vercel Environment Variables.
 
 ---
 
-## 📧 Support Contact
+## 📬 Support & Inquiries
 
+* **Brand Name**: Prep Library
+* **Support Email**: `learnalways93@gmail.com`
 * **Instagram**: [@handbook_library](https://www.instagram.com/handbook_library)
-* **Email**: `learnalways93@gmail.com`
