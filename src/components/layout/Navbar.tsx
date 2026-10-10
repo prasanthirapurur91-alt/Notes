@@ -57,10 +57,10 @@ export const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/payment?type=all_notes"
-              className="inline-flex items-center gap-2 bg-black hover:bg-neutral-800 text-white text-xs font-extrabold px-4.5 py-2.5 rounded-xl transition-all shadow-md cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-3.5 py-2 rounded-xl transition-all shadow-md shadow-emerald-700/30 cursor-pointer border border-emerald-400 green-blinking-border shrink-0"
             >
-              <Sparkles className="w-4 h-4 text-white" />
-              Get All Notes (₹199)
+              <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+              <span>Get All Notes (₹199)</span>
             </Link>
           </div>
 
@@ -68,7 +68,7 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2 md:hidden">
             <Link
               href="/payment?type=all_notes"
-              className="bg-black hover:bg-neutral-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black px-3 py-1.5 rounded-lg border border-emerald-400 green-blinking-border"
             >
               Get All Notes (₹199)
             </Link>
