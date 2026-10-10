@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#09090b"/>
+  <!-- Left Page -->
+  <path d="M32 16C23 12 14 12 10 14.5V49C14 46.5 23 46.5 32 50.5V16Z" fill="url(#bookGradient)" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right Page -->
+  <path d="M32 16C41 12 50 12 54 14.5V49C50 46.5 41 46.5 32 50.5V16Z" fill="url(#bookGradient)" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Spine Line -->
+  <path d="M32 16V50.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Page Text Lines Left -->
+  <path d="M16 23C19.5 22 24.5 22 27 23" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <path d="M16 29C19.5 28 24.5 28 27 29" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <path d="M16 35C19.5 34 24.5 34 27 35" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <path d="M16 41C19.5 40 24.5 40 27 41" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <!-- Page Text Lines Right -->
+  <path d="M37 23C39.5 22 44.5 22 48 23" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <path d="M37 29C39.5 28 44.5 28 48 29" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <path d="M37 35C39.5 34 44.5 34 48 35" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <path d="M37 41C39.5 40 44.5 40 48 41" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+</svg>
