@@ -76,6 +76,7 @@ export async function POST(request: Request) {
           transaction_id: paymentId,
           payment_status: 'paid',
           delivery_status: 'sent',
+          google_drive_link: targetDriveLink,
         });
       } catch (dbErr: any) {
         console.warn('[Supabase Insert Notice]:', dbErr?.message);

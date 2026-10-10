@@ -78,7 +78,7 @@ export const AllAccessCTA: React.FC = () => {
               ) : (
                 <Link
                   href="/payment"
-                  className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-neutral-200 text-black font-extrabold text-sm px-6 py-3.5 rounded-xl border border-white shadow-lg transition-all"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black font-extrabold text-sm px-6 py-3.5 rounded-xl border border-emerald-400 shadow-lg shadow-emerald-950/50 transition-all cursor-pointer"
                 >
                   <Zap className="w-4 h-4 text-black" /> Get All Notes Pass (₹{siteConfig.allAccessPrice})
                 </Link>

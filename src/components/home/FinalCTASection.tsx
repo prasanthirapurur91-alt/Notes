@@ -18,7 +18,7 @@ export const FinalCTASection: React.FC = () => {
         <div className="pt-2">
           <Link
             href="/payment"
-            className="inline-flex items-center gap-2 bg-white hover:bg-neutral-200 text-black font-extrabold text-base px-8 py-4 rounded-xl shadow-xl transition-all border border-white"
+            className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black font-extrabold text-base px-8 py-4 rounded-xl shadow-xl shadow-emerald-950/50 transition-all border border-emerald-400 cursor-pointer"
           >
             Get All Notes Now →
           </Link>

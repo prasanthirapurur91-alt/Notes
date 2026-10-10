@@ -397,9 +397,9 @@ export default function BundlePaymentPage() {
                     <button
                       type="submit"
                       disabled={isProcessing}
-                      className="w-full bg-white hover:bg-neutral-200 text-black font-extrabold text-sm py-3.5 rounded-xl shadow-lg transition-all border border-white flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-sm py-4 rounded-xl shadow-lg shadow-emerald-900/40 transition-all border border-emerald-500 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <Lock className="w-4 h-4 text-black" />
+                      <Lock className="w-4 h-4 text-white" />
                       {isProcessing ? 'Opening Razorpay Gateway...' : `Pay ₹${bundlePrice} via Razorpay`}
                     </button>
                   </form>

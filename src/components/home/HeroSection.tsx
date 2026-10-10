@@ -53,7 +53,7 @@ export const HeroSection: React.FC = () => {
             <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
               <Link
                 href="/payment"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-extrabold px-6 py-3.5 rounded-xl transition-all shadow-md text-sm cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-700/30 text-sm cursor-pointer border border-emerald-500"
               >
                 <Sparkles className="w-4 h-4 text-white" />
                 Get All Notes Now (₹199)

@@ -138,6 +138,7 @@ export async function POST(request: Request) {
       transaction_id: cleanTxnId,
       payment_status: 'paid',
       delivery_status: 'sent',
+      google_drive_link: targetDriveLink,
     });
 
     if (dbError) {

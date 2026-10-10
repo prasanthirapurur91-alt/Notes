@@ -128,7 +128,7 @@ export const PDFPreviewModal: React.FC = () => {
           <span>🔒 Locked Resource: Get All 200+ Notes for ₹199 (M.R.P. ₹699)</span>
           <a
             href="/payment?type=all_notes"
-            className="bg-white hover:bg-neutral-200 text-black text-[11px] font-extrabold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer border border-white"
+            className="bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] font-black px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer border border-emerald-400 shadow-sm"
           >
             Get All Notes Now (₹199) →
           </a>

@@ -81,7 +81,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, links }
               onClick={onClose}
               className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-neutral-200 text-black font-bold text-sm px-5 py-3.5 rounded-xl border border-white shadow-lg transition-all"
             >
-              <Sparkles className="w-4 h-4 text-black" /> Get All Notes Pass (₹99)
+              <Sparkles className="w-4 h-4 text-black" /> Get All Notes Pass (₹199)
             </Link>
           )}
 

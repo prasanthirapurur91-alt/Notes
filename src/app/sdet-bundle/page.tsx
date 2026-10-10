@@ -76,7 +76,7 @@ export default function SDETBundlePage() {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                 <Link
                   href="/payment/bundle"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-neutral-200 text-black font-extrabold px-7 py-3.5 rounded-xl transition-all shadow-lg border border-white text-sm"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold px-7 py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-900/40 border border-emerald-500 text-sm cursor-pointer"
                 >
                   Get Complete SDET Bundle (₹{sdetPrice})
                 </Link>

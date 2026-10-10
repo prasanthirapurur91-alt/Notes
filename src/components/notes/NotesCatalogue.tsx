@@ -125,11 +125,11 @@ export const NotesCatalogue: React.FC = () => {
 
         {/* SECTION 2: Statistics */}
         <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-white bg-black px-3 py-1 rounded-md">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-3">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-white bg-black px-3 py-1.5 rounded-md shrink-0">
               BEST FOR QUICK REVISION ✨
             </span>
-            <span className="text-xs text-neutral-500 font-mono">Verified Notes Marketplace</span>
+            <span className="text-xs text-neutral-500 font-mono font-medium">Verified Notes Marketplace</span>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
