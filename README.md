@@ -274,8 +274,78 @@ git push origin main
 
 ---
 
+## ⚡ Quick Reference Guide: Operations & Maintenance
+
+### 1. How to Enable Razorpay Live Mode (Accept Real Payments)
+Follow these exact steps when you are ready to accept real customer payments:
+
+1. **Switch to Live Mode**:
+   - Log in to your **[Razorpay Dashboard](https://dashboard.razorpay.com)**.
+   - In the top-right corner, toggle the switch from **Test Mode** to **Live Mode**.
+2. **Generate Live API Keys**:
+   - Go to **Account & Settings** → **API Keys** (under *Developer controls*).
+   - Click **Generate Key** (or **Regenerate Key**).
+   - You will receive a **Live Key ID** (starts with `rzp_live_...`) and a **Live Key Secret**.
+3. **Update Vercel Environment Variables**:
+   - Open **[Vercel Dashboard](https://vercel.com/dashboard)** → Select your **Notes** project.
+   - Go to **Settings** → **Environment Variables**.
+   - Update these 3 variables with your Live credentials:
+     - `NEXT_PUBLIC_RAZORPAY_KEY_ID` = `rzp_live_YOUR_LIVE_KEY_ID`
+     - `RAZORPAY_KEY_ID` = `rzp_live_YOUR_LIVE_KEY_ID`
+     - `RAZORPAY_KEY_SECRET` = `YOUR_LIVE_KEY_SECRET`
+   - Select **Production**, **Preview**, and **Development** targets, then click **Save**.
+4. **Redeploy on Vercel**:
+   - Go to the **Deployments** tab, click the three dots (`...`) on your latest deployment, and select **Redeploy**.
+
+---
+
+### 2. How to Change the Price in the Future (e.g. ₹199 to ₹500)
+We have implemented a **Centralized Price Architecture**. When you change the price, **every single button, badge, checkout order, Razorpay charge, database entry, and email receipt automatically updates**!
+
+The backend enforces this price on Razorpay’s servers — **a customer MUST pay the new price (e.g. ₹500) to receive verified access and the email.**
+
+#### Choose either method:
+* **Method A (No code changes needed — via Vercel)**:
+  In **Vercel Settings → Environment Variables** (and `.env.local`), add or update:
+  ```env
+  NEXT_PUBLIC_ALL_ACCESS_PRICE=500
+  ```
+  Then click **Redeploy** on Vercel.
+
+* **Method B (Directly in Code)**:
+  In `src/data/siteConfig.ts`, change line 4:
+  ```typescript
+  const currentPrice = Number(process.env.NEXT_PUBLIC_ALL_ACCESS_PRICE) || 500;
+  ```
+  Commit and push to GitHub (`git push origin main`).
+
+---
+
+### 3. How to Change or Update the Google Drive Link
+To point to a new Google Drive folder:
+
+1. **In Vercel / `.env.local`**:
+   Update the variable `GOOGLE_DRIVE_NOTES_LINK`:
+   ```env
+   GOOGLE_DRIVE_NOTES_LINK=https://drive.google.com/drive/folders/YOUR_NEW_FOLDER_ID?usp=drive_link
+   ```
+2. **In Code Fallback (Optional)**:
+   In `src/app/payment/page.tsx`, update line 38 (`defaultDriveLink`).
+3. Click **Redeploy** on Vercel.  
+   *All subsequent purchases will automatically send the new Google Drive link in their confirmation email!*
+
+---
+
+### 4. Code Cleanup Performed
+* **Removed Duplicate API Folders**: Deleted obsolete redundant folders `src/app/api/create-order` and `src/app/api/verify-payment`. The active endpoints are `/api/payment/create-order` and `/api/payment/verify`.
+* **Email Sender**: Set strictly to `"Prep Library" <learnalways93@gmail.com>`.
+* **Dynamic Receipt**: The email receipt automatically displays the exact paid price (e.g. ₹500).
+
+---
+
 ## 📬 Support & Inquiries
 
 * **Brand Name**: Prep Library
 * **Support Email**: `learnalways93@gmail.com`
 * **Instagram**: [@handbook_library](https://www.instagram.com/handbook_library)
+
