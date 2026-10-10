@@ -4,7 +4,12 @@
 -- https://supabase.com/dashboard/project/ttmkugpqtjuarthoeaiw/sql
 -- ===================================================
 
--- 1. Create Orders Table (Customer purchase records + Google Drive delivery link)
+-- 1. Drop old unused tables cleanly if they exist
+DROP TABLE IF EXISTS public.notes CASCADE;
+DROP TABLE IF EXISTS public.categories CASCADE;
+DROP TABLE IF EXISTS public.products CASCADE;
+
+-- 2. Create Orders Table (Customer purchase records + Google Drive delivery link)
 CREATE TABLE IF NOT EXISTS public.orders (
   id TEXT PRIMARY KEY,
   customer_name TEXT NOT NULL,
@@ -23,9 +28,9 @@ CREATE TABLE IF NOT EXISTS public.orders (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Enable Row Level Security (RLS)
+-- 3. Enable Row Level Security (RLS)
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
--- 3. RLS Management Policy
+-- 4. RLS Management Policy
 CREATE POLICY "Allow service role full management for orders" 
 ON public.orders FOR ALL USING (true);
