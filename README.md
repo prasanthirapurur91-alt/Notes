@@ -77,7 +77,7 @@ SUPABASE_SERVICE_ROLE_KEY=sb_publishable_srX0yYrtln5m1lIFyw-rwA_JbTWFeJT
 GOOGLE_DRIVE_NOTES_LINK=https://drive.google.com/drive/folders/1ohYqODYiQmYbZSJ1j9fNx-_1sqA5xDlJ?usp=drive_link
 
 # Support Contact
-NEXT_PUBLIC_SUPPORT_EMAIL=prasanthirapuru7@gmail.com
+NEXT_PUBLIC_SUPPORT_EMAIL=learnalways93@gmail.com
 
 # Razorpay Payment Gateway Credentials
 NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
@@ -166,4 +166,4 @@ git push -u origin main
 ## 📧 Support Contact
 
 * **Instagram**: [@handbook_library](https://www.instagram.com/handbook_library)
-* **Email**: `prasanthirapuru7@gmail.com`
+* **Email**: `learnalways93@gmail.com`

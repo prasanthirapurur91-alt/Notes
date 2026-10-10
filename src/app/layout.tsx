@@ -6,6 +6,7 @@ import { AdminDataProvider } from '@/context/AdminDataContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { PDFPreviewModal } from '@/components/modals/PDFPreviewModal';
+import { StickyMobileBar } from '@/components/layout/StickyMobileBar';
 
 export const metadata: Metadata = {
   title: {
@@ -40,13 +41,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="bg-black text-white antialiased flex flex-col min-h-screen">
+      <body className="bg-black text-white antialiased flex flex-col min-h-screen pb-16 md:pb-0">
         <AdminDataProvider>
           <AccessProvider>
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
             <PDFPreviewModal />
+            <StickyMobileBar />
           </AccessProvider>
         </AdminDataProvider>
       </body>

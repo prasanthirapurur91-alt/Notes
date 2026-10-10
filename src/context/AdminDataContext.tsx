@@ -106,7 +106,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
-  const adminEmail = 'prasanthirapuru7@gmail.com';
+  const adminEmail = 'learnalways93@gmail.com';
 
   // Save changes to localStorage helper
   const saveState = (

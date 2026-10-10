@@ -4,7 +4,27 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAdminData } from '@/context/AdminDataContext';
 import { siteConfig } from '@/data/siteConfig';
-import { ChevronDown, ChevronUp, Check, ShieldCheck, QrCode, Layers } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, ShieldCheck, QrCode, Layers, ExternalLink, Lock, Mail } from 'lucide-react';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export default function BundlePaymentPage() {
   const { addOrder, products } = useAdminData();
@@ -12,13 +32,16 @@ export default function BundlePaymentPage() {
   const [email, setEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [accessMessage, setAccessMessage] = useState('Successful, you can get access to the SDET & Job Prep Bundle');
+  const [accessMessage, setAccessMessage] = useState('Successful! Lifetime Access Granted to the SDET & Job Prep Bundle');
+  const [receivedDriveLink, setReceivedDriveLink] = useState('https://drive.google.com/drive/folders/1ohYqODYiQmYbZSJ1j9fNx-_1sqA5xDlJ?usp=drive_link');
+  const [emailDispatched, setEmailDispatched] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Bundle product details
   const sdetProduct = products.find((p) => p.id === 'prod-sdet-bundle');
-  const bundlePrice = sdetProduct?.price || 99;
-  const bundleOriginalPrice = sdetProduct?.originalPrice || 299;
+  const bundlePrice = sdetProduct?.price || 199;
+  const bundleOriginalPrice = sdetProduct?.originalPrice || 699;
 
   // Countdown timer simulation
   const [timeLeft, setTimeLeft] = useState({
@@ -44,41 +67,136 @@ export default function BundlePaymentPage() {
     if (!fullName || !email) return;
 
     setIsProcessing(true);
-    const txnId = `TXN-BUNDLE-${Date.now()}`;
-    const now = new Date();
+    setErrorMessage('');
 
     try {
-      // Record payment transaction into Admin Database
-      addOrder({
-        customerName: fullName,
-        email,
-        amount: bundlePrice,
-        date: now.toISOString().split('T')[0],
-        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        transactionId: txnId,
-        productName: `QA / SDET Job Preparation Bundle (₹${bundlePrice})`,
-      });
+      // 1. Load Razorpay Checkout SDK Script
+      const resScript = await loadRazorpayScript();
+      if (!resScript) {
+        setErrorMessage('Failed to load Razorpay payment gateway SDK. Please check your internet connection.');
+        setIsProcessing(false);
+        return;
+      }
 
-      // Trigger secure server-side payment verification and automated email dispatch
-      await fetch('/api/payment/verify', {
+      // 2. Create Razorpay order on server side
+      const orderRes = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          amount: bundlePrice,
           email,
           fullName,
-          transactionId: txnId,
-          productType: 'sdet-bundle',
+          productId: 'prod-sdet-bundle',
+          productType: 'bundle',
         }),
       });
 
-      setIsProcessing(false);
-      setAccessMessage('Successful, you can get access to the SDET & Job Prep Bundle');
-      setIsSuccess(true);
-    } catch (err) {
+      const orderData = await orderRes.json();
+
+      if (!orderData.success) {
+        setErrorMessage(orderData.error || 'Failed to initialize payment order.');
+        setIsProcessing(false);
+        return;
+      }
+
+      const verifyPayment = async (paymentDetails: {
+        razorpay_order_id?: string;
+        razorpay_payment_id?: string;
+        razorpay_signature?: string;
+        transactionId?: string;
+      }) => {
+        const txnId = paymentDetails.razorpay_payment_id || paymentDetails.transactionId || `TXN-BUNDLE-${Date.now()}`;
+        const now = new Date();
+
+        addOrder({
+          customerName: fullName,
+          email,
+          amount: bundlePrice,
+          date: now.toISOString().split('T')[0],
+          time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          transactionId: txnId,
+          productName: `QA / SDET Job Preparation Bundle (₹${bundlePrice})`,
+        });
+
+        const verifyRes = await fetch('/api/payment/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            fullName,
+            transactionId: txnId,
+            productId: 'prod-sdet-bundle',
+            productType: 'bundle',
+            price: bundlePrice,
+            razorpay_order_id: paymentDetails.razorpay_order_id,
+            razorpay_payment_id: paymentDetails.razorpay_payment_id,
+            razorpay_signature: paymentDetails.razorpay_signature,
+          }),
+        });
+
+        const verifyData = await verifyRes.json();
+        setIsProcessing(false);
+
+        if (verifyData.success) {
+          setAccessMessage('Payment Successful! Lifetime Access Granted to SDET Bundle.');
+          if (verifyData.googleDriveLink) {
+            setReceivedDriveLink(verifyData.googleDriveLink);
+          }
+          if (verifyData.driveLinkSent) {
+            setEmailDispatched(true);
+          }
+          setIsSuccess(true);
+        } else {
+          setErrorMessage(verifyData.error || 'Payment verification failed.');
+        }
+      };
+
+      if (orderData.keyId && orderData.keyId !== 'rzp_test_placeholder' && window.Razorpay) {
+        const options = {
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency || 'INR',
+          name: siteConfig.brandName || 'Prep Library',
+          description: 'QA / SDET Job Prep Bundle Access (₹199)',
+          order_id: orderData.orderId,
+          prefill: {
+            name: fullName,
+            email: email,
+          },
+          theme: {
+            color: '#000000',
+          },
+          handler: async function (response: any) {
+            await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+          },
+          modal: {
+            ondismiss: function () {
+              setIsProcessing(false);
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response: any) {
+          console.error('[Razorpay Payment Failed]:', response.error);
+          setErrorMessage(response.error.description || 'Payment failed. Please try again.');
+          setIsProcessing(false);
+        });
+        rzp.open();
+      } else {
+        console.log('[Razorpay Demo Mode] Simulating payment verification...');
+        await verifyPayment({
+          transactionId: `TXN-DEMO-BUNDLE-${Date.now()}`,
+        });
+      }
+    } catch (err: any) {
       console.error('Payment error:', err);
       setIsProcessing(false);
-      setAccessMessage('Successful, you can get access to the SDET & Job Prep Bundle');
-      setIsSuccess(true);
+      setErrorMessage(err.message || 'An error occurred during payment processing.');
     }
   };
 
@@ -89,7 +207,7 @@ export default function BundlePaymentPage() {
     },
     {
       q: 'How will I receive the bundle materials?',
-      a: 'Once your payment is verified, our server sends the Google Drive link directly to your entered email address.',
+      a: 'Once your payment is verified via Razorpay, our server immediately displays your access link and sends the Google Drive link directly to your email address.',
     },
     {
       q: 'Can I download all PDF resources in this bundle?',
@@ -166,12 +284,24 @@ export default function BundlePaymentPage() {
                 <Layers className="w-4 h-4 text-white" /> Bundle Includes:
               </strong>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-white">
-                <div className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> Selenium WebDriver Guide</div>
-                <div className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> Playwright Framework</div>
-                <div className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> RestAssured API Testing</div>
-                <div className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> Cucumber BDD Framework</div>
-                <div className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> SQL & Database Queries</div>
-                <div className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> 1200+ QA Interview Q&As</div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-white" /> Selenium WebDriver Guide
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-white" /> Playwright Framework
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-white" /> RestAssured API Testing
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-white" /> Cucumber BDD Framework
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-white" /> SQL & Database Queries
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-white" /> 1200+ QA Interview Q&As
+                </div>
               </div>
             </div>
           </div>
@@ -184,33 +314,55 @@ export default function BundlePaymentPage() {
                   <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mx-auto text-3xl font-bold border border-white">
                     ✓
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    {accessMessage}
-                  </h2>
-                  <p className="text-xs text-neutral-400 leading-relaxed">
-                    The Google Drive bundle access link has been automatically sent to <strong>{email}</strong>.
+                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{accessMessage}</h2>
+                  <p className="text-xs text-neutral-400 leading-relaxed flex items-center justify-center gap-1.5">
+                    <Mail className="w-4 h-4 text-white" />
+                    Access sent to: <strong>{email}</strong>
+                    {emailDispatched && <span className="text-emerald-400 font-bold">(Sent ✓)</span>}
                   </p>
+
+                  <div className="p-4 bg-neutral-900 rounded-xl border border-neutral-800 space-y-3 text-left">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block">
+                      📁 YOUR GOOGLE DRIVE ACCESS LINK
+                    </span>
+                    {receivedDriveLink && (
+                      <a
+                        href={receivedDriveLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full bg-white hover:bg-neutral-200 text-black font-extrabold text-xs py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <ExternalLink className="w-4 h-4 text-black" />
+                        Open Google Drive Folder ↗
+                      </a>
+                    )}
+                  </div>
+
                   <div className="pt-2">
                     <Link
                       href="/notes"
-                      className="inline-block bg-white hover:bg-neutral-200 text-black text-xs font-extrabold px-6 py-3.5 rounded-xl shadow-md transition-all border border-white"
+                      className="inline-block bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold px-6 py-3 rounded-xl shadow-md transition-all border border-neutral-700"
                     >
-                      Go to Notes Catalogue →
+                      ← Return to Notes Catalogue
                     </Link>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="border-b border-neutral-800 pb-4">
-                    <h2 className="text-xl font-extrabold text-white">Enter Email for Bundle Checkout</h2>
-                    <p className="text-xs text-neutral-400 mt-1">Instant Google Drive Bundle Delivery</p>
+                    <h2 className="text-xl font-extrabold text-white">Razorpay Bundle Checkout</h2>
+                    <p className="text-xs text-neutral-400 mt-1">Instant Google Drive Bundle Access — ₹{bundlePrice}</p>
                   </div>
+
+                  {errorMessage && (
+                    <div className="p-3 bg-red-950/80 border border-red-800 rounded-xl text-xs text-red-300 font-medium">
+                      ⚠️ {errorMessage}
+                    </div>
+                  )}
 
                   <form onSubmit={handlePay} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-neutral-400 mb-1">
-                        Full Name
-                      </label>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">Full Name</label>
                       <input
                         type="text"
                         required
@@ -222,9 +374,7 @@ export default function BundlePaymentPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-neutral-400 mb-1">
-                        Email Address
-                      </label>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">Email Address</label>
                       <input
                         type="email"
                         required
@@ -237,10 +387,10 @@ export default function BundlePaymentPage() {
 
                     <div className="space-y-1 pt-1 text-[11px] text-neutral-400 font-medium">
                       <div className="flex items-center gap-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-white" /> 100% Secure Server Verification
+                        <ShieldCheck className="w-3.5 h-3.5 text-white" /> 100% Razorpay Secure Payment
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-white" /> Instant Email Drive Access
+                        <Check className="w-3.5 h-3.5 text-white" /> Instant Email & Screen Access
                       </div>
                     </div>
 
@@ -249,22 +399,10 @@ export default function BundlePaymentPage() {
                       disabled={isProcessing}
                       className="w-full bg-white hover:bg-neutral-200 text-black font-extrabold text-sm py-3.5 rounded-xl shadow-lg transition-all border border-white flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      {isProcessing ? 'Verifying Payment...' : `Pay ₹${bundlePrice} For Bundle Now →`}
+                      <Lock className="w-4 h-4 text-black" />
+                      {isProcessing ? 'Opening Razorpay Gateway...' : `Pay ₹${bundlePrice} via Razorpay`}
                     </button>
                   </form>
-
-                  <div className="relative flex py-2 items-center">
-                    <div className="flex-grow border-t border-neutral-800"></div>
-                    <span className="flex-shrink mx-4 text-xs font-bold text-neutral-500 uppercase">OR</span>
-                    <div className="flex-grow border-t border-neutral-800"></div>
-                  </div>
-
-                  <Link
-                    href="/payment/upi"
-                    className="w-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white font-bold text-xs py-3 rounded-xl transition-all border border-neutral-700 flex items-center justify-center gap-2"
-                  >
-                    <QrCode className="w-4 h-4 text-white" /> Pay using UPI ID / QR Code
-                  </Link>
                 </>
               )}
 
@@ -294,7 +432,11 @@ export default function BundlePaymentPage() {
                 className="w-full flex items-center justify-between text-left font-bold text-white text-sm cursor-pointer"
               >
                 <span>{faq.q}</span>
-                {openFaq === idx ? <ChevronUp className="w-4 h-4 text-white" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
+                {openFaq === idx ? (
+                  <ChevronUp className="w-4 h-4 text-white" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-neutral-400" />
+                )}
               </button>
               {openFaq === idx && (
                 <p className="mt-3 pt-3 border-t border-neutral-800 text-xs text-neutral-400 leading-relaxed font-medium">

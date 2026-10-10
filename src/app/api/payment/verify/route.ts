@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase';
 import { defaultProductsCatalogue } from '@/data/productsCatalogue';
+import { sendAccessEmail } from '@/lib/email';
 
 // In-memory set to prevent duplicate email dispatches during runtime burst requests
 const processedTransactions = new Set<string>();
@@ -8,7 +10,16 @@ const processedTransactions = new Set<string>();
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, fullName, transactionId, productId, productType } = body;
+    const {
+      email,
+      fullName,
+      transactionId,
+      productId,
+      productType,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = body;
 
     // 1. Strict Server-Side Payload Validation
     if (!email || typeof email !== 'string' || !email.includes('@')) {
@@ -19,10 +30,31 @@ export async function POST(request: Request) {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanTxnId = transactionId && typeof transactionId === 'string' ? transactionId.trim() : `TXN-${Date.now()}`;
+    const cleanTxnId =
+      razorpay_payment_id ||
+      (transactionId && typeof transactionId === 'string' ? transactionId.trim() : `TXN-${Date.now()}`);
     const targetProductId = productId || (productType === 'sdet-bundle' ? 'prod-sdet-bundle' : 'prod-all-notes');
 
-    // 2. Authoritative Server-Side Product Lookup (Never trust frontend price or drive URL)
+    // 2. Razorpay Signature Verification (if live signature provided)
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (razorpay_signature && razorpay_order_id && razorpay_payment_id) {
+      if (keySecret) {
+        const expectedSignature = crypto
+          .createHmac('sha256', keySecret)
+          .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+          .digest('hex');
+
+        if (expectedSignature !== razorpay_signature) {
+          console.error('[Razorpay Signature Error]: Signature mismatch');
+          return NextResponse.json(
+            { success: false, error: 'Payment signature verification failed.' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // 3. Authoritative Server-Side Product Lookup
     let matchedProduct: {
       id: string;
       name: string;
@@ -43,21 +75,22 @@ export async function POST(request: Request) {
           id: dbProd.id,
           name: dbProd.name,
           productType: dbProd.product_type,
-          price: Number(dbProd.price) || 99,
+          price: Number(dbProd.price) || 199,
           driveLink: dbProd.drive_link || '',
         };
       }
     } catch {
-      // Fallback to default catalog if database table is initializing
+      // Fallback if DB table is initializing
     }
 
     if (!matchedProduct) {
-      const fallbackProd = defaultProductsCatalogue.find((p) => p.id === targetProductId) || defaultProductsCatalogue[0];
+      const fallbackProd =
+        defaultProductsCatalogue.find((p) => p.id === targetProductId) || defaultProductsCatalogue[0];
       matchedProduct = {
         id: fallbackProd.id,
         name: fallbackProd.name,
         productType: fallbackProd.productType,
-        price: fallbackProd.price,
+        price: fallbackProd.price || 199,
         driveLink: fallbackProd.driveLink,
       };
     }
@@ -65,10 +98,10 @@ export async function POST(request: Request) {
     const targetDriveLink =
       matchedProduct.driveLink ||
       (matchedProduct.productType === 'bundle'
-        ? process.env.GOOGLE_DRIVE_SDET_BUNDLE_LINK || ''
-        : process.env.GOOGLE_DRIVE_NOTES_LINK || '');
+        ? process.env.GOOGLE_DRIVE_SDET_BUNDLE_LINK || 'https://drive.google.com/drive/folders/1ohYqODYiQmYbZSJ1j9fNx-_1sqA5xDlJ?usp=drive_link'
+        : process.env.GOOGLE_DRIVE_NOTES_LINK || 'https://drive.google.com/drive/folders/1ohYqODYiQmYbZSJ1j9fNx-_1sqA5xDlJ?usp=drive_link');
 
-    // 3. Database Idempotency Check: Prevent duplicate order & delivery on repeated webhooks/calls
+    // 4. Database Idempotency Check: Avoid duplicate delivery
     const { data: existingOrder } = await supabaseAdmin
       .from('orders')
       .select('id, transaction_id, delivery_status')
@@ -90,7 +123,7 @@ export async function POST(request: Request) {
     // Mark transaction as processed in-memory
     processedTransactions.add(cleanTxnId);
 
-    // 4. Record Order in Supabase Database
+    // 5. Record Order in Supabase Database
     const orderId = `ord-${Date.now()}`;
     const { error: dbError } = await supabaseAdmin.from('orders').insert({
       id: orderId,
@@ -110,13 +143,18 @@ export async function POST(request: Request) {
     if (dbError) {
       console.warn('[Supabase Order Insert Warning]:', dbError.message);
     } else {
-      console.log(`[Supabase Order Success] Recorded order ${orderId} for ${cleanEmail} (Product: ${matchedProduct.name})`);
+      console.log(
+        `[Supabase Order Success] Recorded order ${orderId} for ${cleanEmail} (Amount: ₹${matchedProduct.price}, Product: ${matchedProduct.name})`
+      );
     }
 
-    // 5. Trigger Secure Email Delivery
-    console.log(
-      `[Email Dispatch Log] Delivery email sent to ${cleanEmail}. Resource: ${matchedProduct.name}. Link: ${targetDriveLink}`
-    );
+    // 6. Trigger Secure Automated Email Delivery
+    const emailResult = await sendAccessEmail({
+      toEmail: cleanEmail,
+      customerName: fullName || 'Learner',
+      productName: matchedProduct.name,
+      driveLink: targetDriveLink,
+    });
 
     return NextResponse.json({
       success: true,
@@ -126,13 +164,13 @@ export async function POST(request: Request) {
       productName: matchedProduct.name,
       productType: matchedProduct.productType,
       amount: matchedProduct.price,
-      driveLinkSent: true,
+      driveLinkSent: emailResult.success,
       googleDriveLink: targetDriveLink,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Payment verification route error:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error during verification.' },
+      { success: false, error: error.message || 'Internal server error during verification.' },
       { status: 500 }
     );
   }
