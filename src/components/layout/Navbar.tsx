@@ -57,10 +57,10 @@ export const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/payment?type=all_notes"
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-3.5 py-2 rounded-xl transition-all shadow-md shadow-emerald-700/30 cursor-pointer border border-emerald-400 green-blinking-border shrink-0"
+              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-3 py-1.5 rounded-lg transition-all shadow-md shadow-emerald-700/30 cursor-pointer border border-emerald-400 green-blinking-border shrink-0"
             >
-              <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
-              <span>Get All Notes (₹199)</span>
+              <Sparkles className="w-3.5 h-3.5 text-white shrink-0 animate-pulse" />
+              <span>Pay ₹199</span>
             </Link>
           </div>
 
@@ -68,9 +68,9 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2 md:hidden">
             <Link
               href="/payment?type=all_notes"
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black px-3 py-1.5 rounded-lg border border-emerald-400 green-blinking-border"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black px-2.5 py-1 rounded-md border border-emerald-400 green-blinking-border shrink-0"
             >
-              Get All Notes (₹199)
+              Pay ₹199
             </Link>
             <button
               onClick={() => setMobileMenuOpen(true)}
