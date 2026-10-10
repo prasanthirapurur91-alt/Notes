@@ -6,11 +6,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { amount = 199, email, fullName, productId, productType } = body;
 
-    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
 
-    if (!keyId || !keySecret) {
-      console.warn('[Razorpay Notice]: Missing keys, using sandbox order.');
+    // Check if keys are omitted or set to generic placeholders for demo mode
+    if (!keyId || !keySecret || keyId === 'rzp_test_placeholder' || keyId.includes('YOUR_KEY')) {
+      console.warn('[Razorpay Notice]: No valid Razorpay API keys found. Operating in simulation demo mode.');
       const fallbackOrderId = `order_demo_${Date.now()}`;
       return NextResponse.json({
         success: true,
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
         order_id: fallbackOrderId,
         amount: Math.round(amount * 100),
         currency: 'INR',
-        keyId: keyId || 'rzp_test_placeholder',
+        keyId: null,
       });
     }
 
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
+        isDemoMode: false,
         orderId: order.id,
         order_id: order.id,
         amount: order.amount,
@@ -52,17 +54,14 @@ export async function POST(request: Request) {
         keyId: keyId,
       });
     } catch (authError: any) {
-      console.warn('[Razorpay API Warning]: Authentication failed with current keys, using demo order for testing:', authError?.error?.description || authError?.message);
-      const fallbackOrderId = `order_demo_${Date.now()}`;
-      return NextResponse.json({
-        success: true,
-        isDemoMode: true,
-        orderId: fallbackOrderId,
-        order_id: fallbackOrderId,
-        amount: Math.round(amount * 100),
-        currency: 'INR',
-        keyId: keyId,
-      });
+      console.error('[Razorpay Order Creation Error]:', authError?.error?.description || authError?.message || authError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Razorpay Key Authentication Failed (${authError?.error?.description || authError?.message || 'Invalid Key ID / Secret'}). Please update your Test Key ID and Key Secret from Razorpay Dashboard in .env.local`,
+        },
+        { status: 400 }
+      );
     }
   } catch (error: any) {
     console.error('[Razorpay Order Creation Error]:', error);
@@ -75,3 +74,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

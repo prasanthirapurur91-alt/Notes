@@ -18,10 +18,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
 
-    if (!keyId || !keySecret) {
+    if (!keyId || !keySecret || keyId === 'rzp_test_placeholder' || keyId.includes('YOUR_KEY')) {
       const fallbackOrderId = `order_demo_${Date.now()}`;
       return NextResponse.json({
         success: true,
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         orderId: fallbackOrderId,
         amount: amountInPaise,
         currency: 'INR',
-        keyId: keyId || 'rzp_test_placeholder',
+        keyId: null,
       });
     }
 
@@ -56,6 +56,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
+        isDemoMode: false,
         order_id: order.id,
         orderId: order.id,
         amount: order.amount,
@@ -63,17 +64,14 @@ export async function POST(request: Request) {
         keyId: keyId,
       });
     } catch (authErr: any) {
-      console.warn('[Razorpay API Notice]: Fallback to test order mode:', authErr?.message);
-      const fallbackOrderId = `order_demo_${Date.now()}`;
-      return NextResponse.json({
-        success: true,
-        isDemoMode: true,
-        order_id: fallbackOrderId,
-        orderId: fallbackOrderId,
-        amount: amountInPaise,
-        currency: 'INR',
-        keyId: keyId,
-      });
+      console.error('[Razorpay Order Creation Error]:', authErr?.error?.description || authErr?.message || authErr);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Razorpay Key Authentication Failed (${authErr?.error?.description || authErr?.message || 'Invalid Key ID / Secret'}). Please update your Test Key ID and Key Secret from Razorpay Dashboard in .env.local`,
+        },
+        { status: 400 }
+      );
     }
   } catch (error: any) {
     console.error('[Razorpay Create Order Error]:', error);
@@ -86,3 +84,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

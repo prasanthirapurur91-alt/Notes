@@ -145,7 +145,7 @@ function PaymentContent() {
         }
       };
 
-      if (orderData.keyId && orderData.keyId !== 'rzp_test_placeholder' && window.Razorpay) {
+      if (!orderData.isDemoMode && orderData.keyId && orderData.keyId !== 'rzp_test_placeholder' && window.Razorpay) {
         const options = {
           key: orderData.keyId,
           amount: orderData.amount,

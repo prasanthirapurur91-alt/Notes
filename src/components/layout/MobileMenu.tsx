@@ -79,9 +79,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, links }
             <Link
               href="/payment"
               onClick={onClose}
-              className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-neutral-200 text-black font-bold text-sm px-5 py-3.5 rounded-xl border border-white shadow-lg transition-all"
+              className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm px-4 py-2.5 rounded-xl border border-emerald-400 shadow-lg green-blinking-border transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-black" /> Get All Notes Pass (₹199)
+              <Sparkles className="w-4 h-4 text-white animate-pulse" /> Pay ₹199
             </Link>
           )}
 
