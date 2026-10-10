@@ -18,7 +18,8 @@ export async function sendAccessEmail({
     const smtpPort = Number(process.env.SMTP_PORT) || 587;
     const smtpUser = (process.env.SMTP_USER || '').trim();
     const smtpPass = (process.env.SMTP_PASS || '').trim();
-    const fromAddress = `"Prep Library" <${smtpUser || 'learnalways93@gmail.com'}>`;
+    // For Gmail SMTP, setting exact email in from prevents header forgery flags
+    const fromAddress = smtpUser || 'learnalways93@gmail.com';
 
     if (!smtpUser || !smtpPass) {
       console.warn(
@@ -44,167 +45,88 @@ export async function sendAccessEmail({
       year: 'numeric',
     });
 
-    // Clean, anti-spam subject line (no emojis or trigger words)
-    const subject = `Your Prep Library Access - ${productName}`;
+    // Standard transactional receipt subject line
+    const subject = `Order Receipt: ${productName}`;
 
-    // Plain text version (CRITICAL to avoid Gmail Spam filter)
+    // Plain text version
     const textContent = `
 Hello ${formattedName},
 
-Thank you for your purchase of ${productName} (₹199).
+Thank you for your order from Prep Library.
 
-You can access and download your complete handwritten PDF notes collection on Google Drive here:
+Product: ${productName}
+Amount: ₹199 (Paid)
+Date: ${currentDate}
+
+Access your complete PDF notes folder on Google Drive here:
 ${driveLink}
 
-Order Details:
-- Item: ${productName}
-- Amount: ₹199 (Paid)
-- Access: Lifetime Unlimited Access
-
-If you have any questions or need assistance, reply to this email or contact us at learnalways93@gmail.com.
+If you have any questions, please reply to this email or write to learnalways93@gmail.com.
 
 Best regards,
-Prep Library Team
+Prep Library
 https://preplibrary.com
 `.trim();
 
-    // Premium anti-spam HTML email template
+    // Clean, lightweight transactional HTML body
     const htmlContent = `
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
   <title>Prep Library Access</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f5f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f5f7; padding: 30px 15px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb;">
-          
-          <!-- Header Banner -->
-          <tr>
-            <td style="background-color: #09090b; padding: 32px 30px; text-align: center;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td align="center">
-                    <span style="background-color: #10b981; color: #ffffff; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 9999px; display: inline-block; margin-bottom: 12px;">
-                      VERIFIED ORDER CONFIRMED
-                    </span>
-                    <h1 style="color: #ffffff; font-size: 24px; font-weight: 900; margin: 0; letter-spacing: -0.5px;">
-                      Prep Library
-                    </h1>
-                    <p style="color: #a1a1aa; font-size: 13px; margin: 6px 0 0 0; font-weight: 500;">
-                      Technical Study Notes & Interview Guides
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; color: #111111; margin: 0; padding: 20px;">
+  <div style="max-width: 560px; margin: 0 auto; background-color: #ffffff; padding: 28px; border-radius: 12px; border: 1px solid #e0e0e0;">
+    
+    <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #eeeeee;">
+      <h2 style="margin: 0; color: #111111; font-size: 22px;">Prep Library</h2>
+      <p style="margin: 4px 0 0 0; color: #666666; font-size: 13px;">Order Confirmation & Access Link</p>
+    </div>
 
-          <!-- Main Content -->
-          <tr>
-            <td style="padding: 32px 30px; color: #18181b;">
-              
-              <h2 style="font-size: 18px; font-weight: 800; margin: 0 0 12px 0; color: #09090b;">
-                Welcome, ${formattedName}! 👋
-              </h2>
-              
-              <p style="font-size: 14px; color: #52525b; line-height: 1.6; margin: 0 0 24px 0;">
-                Thank you for your payment. Your purchase of <strong>${productName}</strong> has been successfully verified. You now have lifetime access to the complete Google Drive folder.
-              </p>
+    <div style="padding: 20px 0;">
+      <p style="font-size: 15px; color: #222222; margin-bottom: 16px;">
+        Hello <strong>${formattedName}</strong>,
+      </p>
+      <p style="font-size: 14px; color: #444444; line-height: 1.5; margin-bottom: 24px;">
+        Thank you for purchasing the <strong>${productName}</strong>. Your payment of <strong>₹199</strong> has been verified.
+      </p>
 
-              <!-- CTA Access Box -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 12px; margin-bottom: 24px;">
-                <tr>
-                  <td style="padding: 24px; text-align: center;">
-                    <p style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #065f46; margin: 0 0 8px 0;">
-                      YOUR GOOGLE DRIVE ACCESS LINK
-                    </p>
-                    <p style="font-size: 13px; color: #047857; margin: 0 0 16px 0; font-weight: 500;">
-                      Click the button below to view and download all handwritten PDF notes:
-                    </p>
-                    <a href="${driveLink}" target="_blank" style="display: inline-block; background-color: #059669; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 14px 28px; border-radius: 10px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);">
-                      Open Google Drive Folder &rarr;
-                    </a>
-                  </td>
-                </tr>
-              </table>
+      <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
+        <p style="margin: 0 0 12px 0; font-weight: bold; font-size: 14px; color: #166534;">Your PDF Notes Folder Access</p>
+        <a href="${driveLink}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; font-weight: bold; padding: 12px 24px; border-radius: 6px; font-size: 14px;">
+          Access Google Drive Folder
+        </a>
+      </div>
 
-              <!-- Order Summary Details -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fafafa; border: 1px solid #f4f4f5; border-radius: 12px; margin-bottom: 24px;">
-                <tr>
-                  <td style="padding: 20px;">
-                    <h3 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #71717a; margin: 0 0 14px 0; border-bottom: 1px solid #e4e4e7; padding-bottom: 8px;">
-                      Order Summary
-                    </h3>
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size: 13px; color: #3f3f46;">
-                      <tr>
-                        <td style="padding: 4px 0; font-weight: 600;">Product:</td>
-                        <td style="padding: 4px 0; text-align: right; font-weight: 700; color: #09090b;">${productName}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 4px 0; font-weight: 600;">Amount Paid:</td>
-                        <td style="padding: 4px 0; text-align: right; font-weight: 800; color: #059669;">₹199</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 4px 0; font-weight: 600;">Access Level:</td>
-                        <td style="padding: 4px 0; text-align: right; font-weight: 700; color: #09090b;">Lifetime Unlimited Access</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 4px 0; font-weight: 600;">Date:</td>
-                        <td style="padding: 4px 0; text-align: right; color: #71717a;">${currentDate}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+      <div style="background-color: #fafafa; border: 1px solid #eeeeee; padding: 16px; border-radius: 8px; font-size: 13px; color: #444444; margin-bottom: 20px;">
+        <div style="margin-bottom: 6px;"><strong>Item:</strong> ${productName}</div>
+        <div style="margin-bottom: 6px;"><strong>Amount Paid:</strong> ₹199</div>
+        <div><strong>Date:</strong> ${currentDate}</div>
+      </div>
 
-              <!-- Direct URL Backup -->
-              <p style="font-size: 12px; color: #71717a; line-height: 1.5; margin: 0; word-break: break-all;">
-                If the button above does not work, copy and paste this link into your browser:<br>
-                <a href="${driveLink}" style="color: #0284c7; text-decoration: underline;">${driveLink}</a>
-              </p>
+      <p style="font-size: 12px; color: #666666; line-height: 1.4;">
+        Direct Access URL:<br>
+        <a href="${driveLink}" style="color: #2563eb;">${driveLink}</a>
+      </p>
+    </div>
 
-            </td>
-          </tr>
+    <div style="border-top: 1px solid #eeeeee; padding-top: 16px; text-align: center; font-size: 12px; color: #888888;">
+      Prep Library &bull; Questions? Reply to this email or write to <a href="mailto:learnalways93@gmail.com" style="color: #444444;">learnalways93@gmail.com</a>
+    </div>
 
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #fafafa; border-top: 1px solid #f4f4f5; padding: 20px 30px; text-align: center;">
-              <p style="font-size: 12px; color: #71717a; margin: 0 0 6px 0; font-weight: 500;">
-                Need help or have questions about your purchase?
-              </p>
-              <p style="font-size: 12px; margin: 0;">
-                Contact Support: <a href="mailto:learnalways93@gmail.com" style="color: #09090b; font-weight: 700; text-decoration: none;">learnalways93@gmail.com</a>
-              </p>
-              <p style="font-size: 11px; color: #a1a1aa; margin: 14px 0 0 0;">
-                &copy; ${new Date().getFullYear()} Prep Library. All rights reserved.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
+  </div>
 </body>
 </html>
 `.trim();
 
     const mailOptions = {
       from: fromAddress,
-      replyTo: 'learnalways93@gmail.com',
+      replyTo: smtpUser || 'learnalways93@gmail.com',
       to: toEmail,
       subject: subject,
       text: textContent,
       html: htmlContent,
-      headers: {
-        'X-Priority': '3',
-        'X-Mailer': 'Nodemailer',
-      },
     };
 
     const info = await transporter.sendMail(mailOptions);
